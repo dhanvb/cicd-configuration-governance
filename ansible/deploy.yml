@@ -1,0 +1,40 @@
+---
+- name: Deploy application configuration
+  hosts: app_server
+  gather_facts: false
+
+  vars:
+    app_name: demo-app
+    config_source: "../config-repo/app-config.yml"
+    config_target_dir: "/opt/demo-app"
+    config_target_file: "/opt/demo-app/app-config.yml"
+    deploy_log: "/opt/demo-app/deploy.log"
+
+  tasks:
+    - name: Ensure application config directory exists
+      ansible.builtin.file:
+        path: "{{ config_target_dir }}"
+        state: directory
+        owner: "{{ lookup('env', 'USER') }}"
+        group: "{{ lookup('env', 'USER') }}"
+        mode: "0755"
+
+    - name: Deploy application configuration
+      ansible.builtin.copy:
+        src: "{{ config_source }}"
+        dest: "{{ config_target_file }}"
+        owner: "{{ lookup('env', 'USER') }}"
+        group: "{{ lookup('env', 'USER') }}"
+        mode: "0644"
+
+    - name: Extract deployed config version
+      ansible.builtin.shell: |
+        awk -F': *' '/^version:/ {print $2; exit}' {{ config_target_file }}
+      register: deployed_version
+      changed_when: false
+
+    - name: Log deployed configuration version
+      ansible.builtin.shell: |
+        echo "$(date -Is) | deployed {{ app_name }} config version: {{ deployed_version.stdout }}" >> {{ deploy_log }}
+      args:
+        executable: /bin/bash
