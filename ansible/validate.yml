@@ -1,0 +1,34 @@
+---
+- name: Validate deployed configuration version
+  hosts: app_server
+  gather_facts: false
+
+  vars:
+    approved_version: "7.2"
+    config_target_file: "/opt/demo-app/app-config.yml"
+    validation_log: "/opt/demo-app/validation.log"
+
+  tasks:
+    - name: Read deployed configuration
+      ansible.builtin.slurp:
+        src: "{{ config_target_file }}"
+      register: deployed_config
+
+    - name: Decode deployed configuration
+      ansible.builtin.set_fact:
+        config_content: "{{ deployed_config.content | b64decode }}"
+
+    - name: Extract deployed version
+      ansible.builtin.set_fact:
+        deployed_version: "{{ config_content | regex_search('version:\\s*([^\\n]+)', '\\1') | first }}"
+
+    - name: Log validation attempt
+      ansible.builtin.shell: |
+        echo "$(date -Is) | expected={{ approved_version }} | deployed={{ deployed_version }}" >> {{ validation_log }}
+      args:
+        executable: /bin/bash
+
+    - name: Fail if deployed version is not approved
+      ansible.builtin.fail:
+        msg: "Configuration version mismatch. Expected {{ approved_version }}, got {{ deployed_version }}."
+      when: deployed_version != approved_version

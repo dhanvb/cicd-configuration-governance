@@ -1,0 +1,8 @@
+=== Deployed Config ===
+version: 7.2
+app_name: demo-app
+environment: dev
+owner: platform-team
+
+=== Validation Log ===
+2026-08-24T20:05:33+03:00 | expected=7.2 | deployed=7.2
