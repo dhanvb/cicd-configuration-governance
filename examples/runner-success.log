@@ -1,0 +1,44 @@
+=== Starting deployment ===
+
+PLAY [Deploy application configuration] ****************************************
+
+TASK [Ensure application config directory exists] ******************************
+ok: [localhost]
+
+TASK [Deploy application configuration] ****************************************
+ok: [localhost]
+
+TASK [Extract deployed config version] *****************************************
+ok: [localhost]
+
+TASK [Log deployed configuration version] **************************************
+changed: [localhost]
+
+PLAY RECAP *********************************************************************
+localhost                  : ok=4    changed=1    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+
+
+=== Starting validation ===
+
+PLAY [Validate deployed configuration version] *********************************
+
+TASK [Read deployed configuration] *********************************************
+ok: [localhost]
+
+TASK [Decode deployed configuration] *******************************************
+ok: [localhost]
+
+TASK [Extract deployed version] ************************************************
+ok: [localhost]
+
+TASK [Log validation attempt] **************************************************
+changed: [localhost]
+
+TASK [Fail if deployed version is not approved] ********************************
+skipping: [localhost]
+
+PLAY RECAP *********************************************************************
+localhost                  : ok=4    changed=1    unreachable=0    failed=0    skipped=1    rescued=0    ignored=0   
+
+
+=== Deployment accepted ===
