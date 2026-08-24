@@ -1,0 +1,135 @@
+# CI/CD Configuration Governance
+
+A production-style reference implementation for version-controlled configuration deployment, validation gates, failure evidence, and AI-assisted change review.
+
+## Why This Exists
+
+A deployment pipeline should not only deploy files successfully.
+
+It should prove that the approved configuration version was deployed.
+
+A common operational risk is when a pipeline succeeds technically, but deploys the wrong configuration version. That kind of success is worse than failure because everyone trusts the green checkmark, and the green checkmark lies like a tiny automated politician.
+
+## What This Repository Demonstrates
+
+- Git-backed application configuration
+- Ansible-based deployment
+- Configuration validation gate
+- Failure on unapproved configuration version
+- Evidence logging
+- Failure scenario simulation
+- Rollback-ready structure
+- Foundation for AI-assisted configuration risk review
+
+## Architecture
+
+```text
+Git-backed app-config.yml
+        ↓
+Ansible deployment playbook
+        ↓
+Config copied to target path
+        ↓
+Validation playbook checks approved version
+        ↓
+Pass: deployment accepted
+Fail: deployment rejected with evidence
+```
+
+See:
+
+```text
+architecture.md
+```
+
+## Repository Structure
+
+```text
+.
+├── ansible/
+│   ├── inventory.ini
+│   ├── deploy.yml
+│   └── validate.yml
+├── config-repo/
+│   └── app-config.yml
+├── docs/
+│   └── failure-scenarios.md
+├── examples/
+│   ├── setup-evidence.log
+│   ├── deployment-success.log
+│   ├── validation-success.log
+│   ├── runner-success.log
+│   └── bad-config-validation-failure.log
+├── scripts/
+│   ├── run_deployment.sh
+│   └── simulate_bad_config.sh
+└── architecture.md
+```
+
+## Run Deployment
+
+```bash
+./scripts/run_deployment.sh
+```
+
+## Simulate an Unapproved Configuration
+
+```bash
+./scripts/simulate_bad_config.sh
+```
+
+## Failure Scenario
+
+The repository includes a failure scenario where the configuration version is changed from:
+
+```yaml
+version: 7.2
+```
+
+to:
+
+```yaml
+version: 7.3
+```
+
+The validation gate rejects the deployment because only version `7.2` is approved.
+
+Evidence:
+
+```text
+examples/bad-config-validation-failure.log
+```
+
+## Production Scenario
+
+This is a sandboxed implementation of a production control pattern.
+
+In a real environment, this pattern could be used to validate:
+
+- application configuration versions
+- release configuration
+- environment-specific settings
+- feature flag state
+- approved deployment metadata
+- service ownership metadata
+
+## AI-Assisted Review Direction
+
+The next extension is AI-assisted configuration review.
+
+The AI layer should not approve or deploy changes automatically.
+
+It should help summarize:
+
+- what changed
+- risk level
+- possible production impact
+- required validation checks
+- rollback considerations
+- whether human approval is required
+
+## Key Principle
+
+Automation should not only move changes forward.
+
+It should stop unsafe changes before they become accepted state.
