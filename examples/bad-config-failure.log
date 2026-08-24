@@ -1,0 +1,42 @@
+=== Starting deployment ===
+
+PLAY [Deploy application configuration] ****************************************
+
+TASK [Ensure application config directory exists] ******************************
+ok: [localhost]
+
+TASK [Deploy application configuration] ****************************************
+changed: [localhost]
+
+TASK [Extract deployed config version] *****************************************
+ok: [localhost]
+
+TASK [Log deployed configuration version] **************************************
+changed: [localhost]
+
+PLAY RECAP *********************************************************************
+localhost                  : ok=4    changed=2    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+
+
+=== Starting validation ===
+
+PLAY [Validate deployed configuration version] *********************************
+
+TASK [Read deployed configuration] *********************************************
+ok: [localhost]
+
+TASK [Decode deployed configuration] *******************************************
+ok: [localhost]
+
+TASK [Extract deployed version] ************************************************
+ok: [localhost]
+
+TASK [Log validation attempt] **************************************************
+changed: [localhost]
+
+TASK [Fail if deployed version is not approved] ********************************
+fatal: [localhost]: FAILED! => {"changed": false, "msg": "Configuration version mismatch. Expected 7.2, got 7.3."}
+
+PLAY RECAP *********************************************************************
+localhost                  : ok=4    changed=1    unreachable=0    failed=1    skipped=0    rescued=0    ignored=0   
+
