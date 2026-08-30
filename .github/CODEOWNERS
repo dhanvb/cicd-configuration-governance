@@ -1,0 +1,9 @@
+# Governance policy requires explicit ownership
+/policy/ @dhanvb
+
+# Deployment governance logic
+/ansible/pre_validate.yml @dhanvb
+/ansible/post_validate.yml @dhanvb
+
+# CI governance workflow
+/.github/workflows/ @dhanvb

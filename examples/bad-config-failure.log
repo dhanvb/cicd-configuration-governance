@@ -1,42 +1,27 @@
-=== Starting deployment ===
+=== Pre-deployment validation ===
 
-PLAY [Deploy application configuration] ****************************************
+PLAY [Validate candidate configuration before deployment] **********************
 
-TASK [Ensure application config directory exists] ******************************
+TASK [Load candidate configuration] ********************************************
 ok: [localhost]
 
-TASK [Deploy application configuration] ****************************************
-changed: [localhost]
-
-TASK [Extract deployed config version] *****************************************
+TASK [Load approved release policy] ********************************************
 ok: [localhost]
 
-TASK [Log deployed configuration version] **************************************
-changed: [localhost]
+TASK [Validate required configuration fields] **********************************
+ok: [localhost] => {
+    "changed": false,
+    "msg": "Required configuration fields are present."
+}
+
+TASK [Validate candidate version against approved release] *********************
+fatal: [localhost]: FAILED! => {
+    "assertion": "(candidate_config.version | string) == (release_policy.approved_version | string)",
+    "changed": false,
+    "evaluated_to": false,
+    "msg": "Pre-deployment validation failed. Approved version=7.2, candidate version=7.3."
+}
 
 PLAY RECAP *********************************************************************
-localhost                  : ok=4    changed=2    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
-
-
-=== Starting validation ===
-
-PLAY [Validate deployed configuration version] *********************************
-
-TASK [Read deployed configuration] *********************************************
-ok: [localhost]
-
-TASK [Decode deployed configuration] *******************************************
-ok: [localhost]
-
-TASK [Extract deployed version] ************************************************
-ok: [localhost]
-
-TASK [Log validation attempt] **************************************************
-changed: [localhost]
-
-TASK [Fail if deployed version is not approved] ********************************
-fatal: [localhost]: FAILED! => {"changed": false, "msg": "Configuration version mismatch. Expected 7.2, got 7.3."}
-
-PLAY RECAP *********************************************************************
-localhost                  : ok=4    changed=1    unreachable=0    failed=1    skipped=0    rescued=0    ignored=0   
+localhost                  : ok=3    changed=0    unreachable=0    failed=1    skipped=0    rescued=0    ignored=0   
 

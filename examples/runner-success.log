@@ -1,44 +1,82 @@
-=== Starting deployment ===
+=== Pre-deployment validation ===
 
-PLAY [Deploy application configuration] ****************************************
+PLAY [Validate candidate configuration before deployment] **********************
 
-TASK [Ensure application config directory exists] ******************************
+TASK [Load candidate configuration] ********************************************
 ok: [localhost]
 
-TASK [Deploy application configuration] ****************************************
+TASK [Load approved release policy] ********************************************
 ok: [localhost]
 
-TASK [Extract deployed config version] *****************************************
+TASK [Validate required configuration fields] **********************************
+ok: [localhost] => {
+    "changed": false,
+    "msg": "Required configuration fields are present."
+}
+
+TASK [Validate candidate version against approved release] *********************
+ok: [localhost] => {
+    "changed": false,
+    "msg": "Pre-deployment validation passed for approved version 7.2."
+}
+
+PLAY RECAP *********************************************************************
+localhost                  : ok=4    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+
+
+=== Deploy approved configuration ===
+
+PLAY [Deploy approved application configuration] *******************************
+
+TASK [Load approved candidate configuration] ***********************************
 ok: [localhost]
 
-TASK [Log deployed configuration version] **************************************
+TASK [Ensure application configuration directory exists] ***********************
+ok: [localhost]
+
+TASK [Deploy approved configuration] *******************************************
+ok: [localhost]
+
+TASK [Calculate deployed configuration checksum] *******************************
+ok: [localhost]
+
+TASK [Record deployment evidence] **********************************************
 changed: [localhost]
 
 PLAY RECAP *********************************************************************
-localhost                  : ok=4    changed=1    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+localhost                  : ok=5    changed=1    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
 
 
-=== Starting validation ===
+=== Post-deployment verification ===
 
-PLAY [Validate deployed configuration version] *********************************
+PLAY [Verify deployed configuration] *******************************************
+
+TASK [Load approved release policy] ********************************************
+ok: [localhost]
 
 TASK [Read deployed configuration] *********************************************
 ok: [localhost]
 
-TASK [Decode deployed configuration] *******************************************
+TASK [Parse deployed YAML configuration] ***************************************
 ok: [localhost]
 
-TASK [Extract deployed version] ************************************************
+TASK [Calculate candidate configuration checksum] ******************************
 ok: [localhost]
 
-TASK [Log validation attempt] **************************************************
+TASK [Calculate deployed configuration checksum] *******************************
+ok: [localhost]
+
+TASK [Verify deployed configuration] *******************************************
+ok: [localhost] => {
+    "changed": false,
+    "msg": "Post-deployment verification passed. Approved version and SHA-256 checksum match."
+}
+
+TASK [Record validation evidence] **********************************************
 changed: [localhost]
 
-TASK [Fail if deployed version is not approved] ********************************
-skipping: [localhost]
-
 PLAY RECAP *********************************************************************
-localhost                  : ok=4    changed=1    unreachable=0    failed=0    skipped=1    rescued=0    ignored=0   
+localhost                  : ok=7    changed=1    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
 
 
 === Deployment accepted ===

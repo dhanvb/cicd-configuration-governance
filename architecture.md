@@ -24,14 +24,23 @@ This creates a dangerous situation where automation reports success, but the dep
 ## Architecture Flow
 
 ```text
-Git-backed configuration
+Git-backed candidate configuration
         ↓
-Ansible deployment playbook
+Pre-deployment validation
         ↓
-Configuration copied to target path
+Candidate compared with approved release policy
         ↓
-Validation playbook checks approved version
+Rejected ───────────────→ STOP
+        ↓
+Approved
+        ↓
+Ansible deployment
+        ↓
+Post-deployment verification
+        ↓
+Version + SHA-256 checksum validation
         ↓
 Deployment accepted or rejected
         ↓
-Evidence logs captured
+Evidence captured
+```

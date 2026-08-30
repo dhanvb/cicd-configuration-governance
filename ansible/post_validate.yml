@@ -1,0 +1,62 @@
+---
+- name: Verify deployed configuration
+  hosts: app_server
+  gather_facts: false
+
+  vars:
+    candidate_config_file: "{{ playbook_dir }}/../config-repo/app-config.yml"
+    policy_file: "{{ playbook_dir }}/../policy/approved-release.yml"
+    config_target_file: "/tmp/cicd-configuration-governance/demo-app/app-config.yml"
+    validation_log: "/tmp/cicd-configuration-governance/demo-app/validation.log"
+
+  tasks:
+    - name: Load approved release policy
+      ansible.builtin.include_vars:
+        file: "{{ policy_file }}"
+        name: release_policy
+
+    - name: Read deployed configuration
+      ansible.builtin.slurp:
+        src: "{{ config_target_file }}"
+      register: deployed_config_raw
+
+    - name: Parse deployed YAML configuration
+      ansible.builtin.set_fact:
+        deployed_config: "{{ deployed_config_raw.content | b64decode | from_yaml }}"
+
+    - name: Calculate candidate configuration checksum
+      ansible.builtin.stat:
+        path: "{{ candidate_config_file }}"
+        checksum_algorithm: sha256
+      delegate_to: localhost
+      register: candidate_file
+
+    - name: Calculate deployed configuration checksum
+      ansible.builtin.stat:
+        path: "{{ config_target_file }}"
+        checksum_algorithm: sha256
+      register: deployed_file
+
+    - name: Verify deployed configuration
+      ansible.builtin.assert:
+        that:
+          - (deployed_config.version | string) == (release_policy.approved_version | string)
+          - deployed_file.stat.checksum == candidate_file.stat.checksum
+        fail_msg: >-
+          Post-deployment verification failed.
+          The deployed configuration does not match the approved candidate.
+        success_msg: >-
+          Post-deployment verification passed.
+          Approved version and SHA-256 checksum match.
+
+    - name: Record validation evidence
+      ansible.builtin.lineinfile:
+        path: "{{ validation_log }}"
+        create: true
+        mode: "0644"
+        line: >-
+          {{ lookup('pipe', 'date -Is') }}
+          | approved={{ release_policy.approved_version }}
+          | deployed={{ deployed_config.version }}
+          | checksum={{ deployed_file.stat.checksum }}
+          | verified=true

@@ -3,5 +3,5 @@
 ## Input Change
 
 ```diff
-- version: 7.2
-+ version: 7.3
+- version: "7.2"
++ version: "7.3"

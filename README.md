@@ -18,22 +18,34 @@ A common operational risk is when a pipeline succeeds technically, but deploys t
 - Failure on unapproved configuration version
 - Evidence logging
 - Failure scenario simulation
-- Rollback-ready structure
+- Pre-deployment rejection of unapproved configuration
+- Post-deployment state verification
+- SHA-256 configuration integrity verification
+- Separation of configuration and approval policy
 - Foundation for AI-assisted configuration risk review
 
 ## Architecture
 
 ```text
-Git-backed app-config.yml
+Git-backed candidate configuration
         ↓
-Ansible deployment playbook
+Pre-deployment governance validation
         ↓
-Config copied to target path
+Approved release policy check
         ↓
-Validation playbook checks approved version
-        ↓
-Pass: deployment accepted
-Fail: deployment rejected with evidence
+        ├── Fail → deployment blocked
+        │
+        └── Pass
+              ↓
+        Ansible deployment
+              ↓
+        Post-deployment verification
+              ↓
+        Version + SHA-256 verification
+              ↓
+        Evidence captured
+              ↓
+        Deployment accepted
 ```
 
 See:
@@ -56,10 +68,10 @@ architecture.md
 │   └── failure-scenarios.md
 ├── examples/
 │   ├── setup-evidence.log
-│   ├── deployment-success.log
+│   ├── deployment-evidence.log
 │   ├── validation-success.log
 │   ├── runner-success.log
-│   └── bad-config-validation-failure.log
+│   └── bad-config-failure.log
 ├── scripts/
 │   ├── run_deployment.sh
 │   └── simulate_bad_config.sh

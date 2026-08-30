@@ -1,0 +1,41 @@
+---
+- name: Validate candidate configuration before deployment
+  hosts: app_server
+  gather_facts: false
+
+  vars:
+    candidate_config_file: "{{ playbook_dir }}/../config-repo/app-config.yml"
+    policy_file: "{{ playbook_dir }}/../policy/approved-release.yml"
+
+  tasks:
+    - name: Load candidate configuration
+      ansible.builtin.include_vars:
+        file: "{{ candidate_config_file }}"
+        name: candidate_config
+
+    - name: Load approved release policy
+      ansible.builtin.include_vars:
+        file: "{{ policy_file }}"
+        name: release_policy
+
+    - name: Validate required configuration fields
+      ansible.builtin.assert:
+        that:
+          - candidate_config.version is defined
+          - candidate_config.app_name is defined
+          - candidate_config.environment is defined
+          - candidate_config.owner is defined
+        fail_msg: "Candidate configuration is missing one or more required fields."
+        success_msg: "Required configuration fields are present."
+
+    - name: Validate candidate version against approved release
+      ansible.builtin.assert:
+        that:
+          - (candidate_config.version | string) == (release_policy.approved_version | string)
+        fail_msg: >-
+          Pre-deployment validation failed.
+          Approved version={{ release_policy.approved_version }},
+          candidate version={{ candidate_config.version }}.
+        success_msg: >-
+          Pre-deployment validation passed for approved version
+          {{ candidate_config.version }}.
