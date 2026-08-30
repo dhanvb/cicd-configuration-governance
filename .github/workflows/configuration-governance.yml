@@ -1,0 +1,54 @@
+name: Configuration Governance
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  governance:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Set up Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+
+      - name: Install Ansible
+        run: |
+          python -m pip install --upgrade pip
+          pip install ansible-core==2.16.3
+
+      - name: Validate shell syntax
+        run: |
+          bash -n scripts/run_deployment.sh
+          bash -n scripts/simulate_bad_config.sh
+
+      - name: Validate Ansible syntax
+        run: |
+          ansible-playbook -i ansible/inventory.ini ansible/pre_validate.yml --syntax-check
+          ansible-playbook -i ansible/inventory.ini ansible/deploy.yml --syntax-check
+          ansible-playbook -i ansible/inventory.ini ansible/post_validate.yml --syntax-check
+
+      - name: Test approved deployment
+        run: ./scripts/run_deployment.sh
+
+      - name: Test rejected configuration
+        run: ./scripts/simulate_bad_config.sh
+
+      - name: Upload governance evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: configuration-governance-evidence
+          path: examples/bad-config-failure.log
