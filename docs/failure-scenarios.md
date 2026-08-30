@@ -8,17 +8,24 @@ A configuration file with version `7.3` was introduced into the deployment workf
 
 ### Expected Behavior
 
-The deployment workflow may copy the file, but the validation gate must fail before the deployment is accepted.
+The pre-deployment governance gate must reject version 7.3 before
+the candidate configuration is copied to the target system.
+
+The previously approved deployed configuration must remain unchanged.
 
 ### Control
 
-The Ansible validation playbook checks the deployed configuration version against the approved version.
+The pre-deployment validation playbook compares the candidate
+configuration version with policy/approved-release.yml.
+
+If the candidate does not match the approved version, the pipeline
+terminates before deployment.
 
 ### Evidence
 
 See:
 
-- `examples/day6-bad-config-failure.log`
+- `examples/bad-config-failure.log`
 
 ### Operational Lesson
 
