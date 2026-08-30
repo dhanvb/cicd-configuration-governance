@@ -5,12 +5,22 @@ ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
 cd "$ROOT_DIR"
 
-echo "=== Starting deployment ==="
-ansible-playbook -i ansible/inventory.ini ansible/deploy.yml
+echo "=== Pre-deployment validation ==="
+ansible-playbook \
+  -i ansible/inventory.ini \
+  ansible/pre_validate.yml
 
 echo
-echo "=== Starting validation ==="
-ansible-playbook -i ansible/inventory.ini ansible/validate.yml
+echo "=== Deploy approved configuration ==="
+ansible-playbook \
+  -i ansible/inventory.ini \
+  ansible/deploy.yml
+
+echo
+echo "=== Post-deployment verification ==="
+ansible-playbook \
+  -i ansible/inventory.ini \
+  ansible/post_validate.yml
 
 echo
 echo "=== Deployment accepted ==="
