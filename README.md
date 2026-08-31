@@ -60,10 +60,17 @@ architecture.md
 .
 ├── ansible/
 │   ├── inventory.ini
+│   ├── pre_validate.yml
 │   ├── deploy.yml
-│   └── validate.yml
+│   └── post_validate.yml
 ├── config-repo/
 │   └── app-config.yml
+├── policy/
+│   └── approved-release.yml
+├── .github/ 
+│   └── CODEOWNERS
+│   └── workflows/
+│       └── configuration-governance.yml 
 ├── docs/
 │   └── failure-scenarios.md
 ├── examples/
@@ -95,13 +102,13 @@ architecture.md
 The repository includes a failure scenario where the configuration version is changed from:
 
 ```yaml
-version: 7.2
+version: "7.2"
 ```
 
 to:
 
 ```yaml
-version: 7.3
+version: "7.3"
 ```
 
 The validation gate rejects the deployment because only version `7.2` is approved.
