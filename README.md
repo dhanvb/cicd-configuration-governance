@@ -58,6 +58,14 @@ architecture.md
 
 ```text
 .
+├── .github/
+│   ├── CODEOWNERS
+│   └── workflows/
+│       └── configuration-governance.yml
+├── ai-review/
+│   ├── config_change_review_prompt.md
+│   ├── risk_matrix.md
+│   └── sample_ai_review.md
 ├── ansible/
 │   ├── inventory.ini
 │   ├── pre_validate.yml
@@ -67,12 +75,9 @@ architecture.md
 │   └── app-config.yml
 ├── policy/
 │   └── approved-release.yml
-├── .github/ 
-│   └── CODEOWNERS
-│   └── workflows/
-│       └── configuration-governance.yml 
 ├── docs/
-│   └── failure-scenarios.md
+│   ├── failure-scenarios.md
+│   └── production-scenario.md
 ├── examples/
 │   ├── setup-evidence.log
 │   ├── deployment-evidence.log
@@ -111,12 +116,12 @@ to:
 version: "7.3"
 ```
 
-The validation gate rejects the deployment because only version `7.2` is approved.
+The pre-deployment governance gate rejects the candidate before deployment because only version `7.2` is approved. The previously approved target state remains unchanged.
 
 Evidence:
 
 ```text
-examples/bad-config-validation-failure.log
+examples/bad-config-failure.log
 ```
 
 ## Production Scenario
