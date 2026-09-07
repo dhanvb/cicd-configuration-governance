@@ -28,14 +28,36 @@
         fail_msg: "Candidate configuration is missing one or more required fields."
         success_msg: "Required configuration fields are present."
 
-    - name: Validate candidate version against approved release
+    - name: Validate approved baseline fields
       ansible.builtin.assert:
         that:
+          - release_policy.baseline_schema is defined
+          - release_policy.application is defined
+          - release_policy.environment is defined
+          - release_policy.approved_version is defined
+          - release_policy.approved_config_sha256 is defined
+          - (release_policy.baseline_schema | int) == 1
+        fail_msg: "Approved release policy is missing required baseline information."
+        success_msg: "Approved release baseline is structurally valid."
+
+    - name: Calculate candidate configuration SHA-256
+      ansible.builtin.stat:
+        path: "{{ candidate_config_file }}"
+        checksum_algorithm: sha256
+      register: candidate_file
+      delegate_to: localhost
+
+    - name: Validate candidate against approved configuration baseline
+      ansible.builtin.assert:
+        that:
+          - candidate_config.app_name == release_policy.application
+          - candidate_config.environment == release_policy.environment
           - (candidate_config.version | string) == (release_policy.approved_version | string)
+          - (candidate_file.stat.checksum | lower) == (release_policy.approved_config_sha256 | lower)
         fail_msg: >-
-          Pre-deployment validation failed.
-          Approved version={{ release_policy.approved_version }},
-          candidate version={{ candidate_config.version }}.
+          Pre-deployment governance validation failed.
+          The candidate configuration does not match the approved baseline.
         success_msg: >-
-          Pre-deployment validation passed for approved version
-          {{ candidate_config.version }}.
+          Pre-deployment governance validation passed.
+          Candidate application, environment, version, and SHA-256
+          match the approved baseline.

@@ -1,5 +1,5 @@
 ---
-- name: Verify deployed configuration
+- name: Verify deployed configuration against approved baseline
   hosts: app_server
   gather_facts: false
 
@@ -40,14 +40,20 @@
     - name: Verify deployed configuration
       ansible.builtin.assert:
         that:
+          - deployed_config.app_name == release_policy.application
+          - deployed_config.environment == release_policy.environment
           - (deployed_config.version | string) == (release_policy.approved_version | string)
-          - deployed_file.stat.checksum == candidate_file.stat.checksum
+          - (candidate_file.stat.checksum | lower) == (release_policy.approved_config_sha256 | lower)
+          - (deployed_file.stat.checksum | lower) == (release_policy.approved_config_sha256 | lower)
+          - (deployed_file.stat.checksum | lower) == (candidate_file.stat.checksum | lower)
         fail_msg: >-
           Post-deployment verification failed.
-          The deployed configuration does not match the approved candidate.
+          The approved baseline, candidate configuration, and deployed
+          configuration do not have the expected identity.
         success_msg: >-
           Post-deployment verification passed.
-          Approved version and SHA-256 checksum match.
+          Application, environment, version, approved SHA-256,
+          candidate SHA-256, and deployed SHA-256 all match.
 
     - name: Record validation evidence
       ansible.builtin.lineinfile:
@@ -56,7 +62,11 @@
         mode: "0644"
         line: >-
           {{ lookup('pipe', 'date -Is') }}
-          | approved={{ release_policy.approved_version }}
-          | deployed={{ deployed_config.version }}
-          | checksum={{ deployed_file.stat.checksum }}
+          | app={{ deployed_config.app_name }}
+          | environment={{ deployed_config.environment }}
+          | approved_version={{ release_policy.approved_version }}
+          | deployed_version={{ deployed_config.version }}
+          | approved_sha256={{ release_policy.approved_config_sha256 }}
+          | candidate_sha256={{ candidate_file.stat.checksum }}
+          | deployed_sha256={{ deployed_file.stat.checksum }}
           | verified=true

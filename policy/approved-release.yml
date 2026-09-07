@@ -1,1 +1,7 @@
+---
+baseline_schema: 1
+application: demo-app
+environment: dev
 approved_version: "7.2"
+approved_config_sha256: "609b68a1f04028ea5c3a8b5204ad243f4f3c1ad09ea4a0017bace72ddbef372b"
+
