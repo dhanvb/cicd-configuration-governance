@@ -11,10 +11,17 @@
     deploy_log: "{{ config_target_dir }}/deploy.log"
 
   tasks:
-    - name: Load approved candidate configuration
+    - name: Load candidate configuration
       ansible.builtin.include_vars:
         file: "{{ config_source }}"
         name: candidate_config
+
+    - name: Calculate candidate configuration checksum
+      ansible.builtin.stat:
+        path: "{{ config_source }}"
+        checksum_algorithm: sha256
+      register: candidate_file
+      delegate_to: localhost
 
     - name: Ensure application configuration directory exists
       ansible.builtin.file:
@@ -43,4 +50,5 @@
           {{ lookup('pipe', 'date -Is') }}
           | app={{ app_name }}
           | version={{ candidate_config.version }}
-          | checksum={{ deployed_file.stat.checksum }}
+          | candidate_sha256={{ candidate_file.stat.checksum }}
+          | deployed_sha256={{ deployed_file.stat.checksum }}
