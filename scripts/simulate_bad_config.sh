@@ -23,10 +23,15 @@ echo "=== Establishing approved baseline ==="
 
 BASELINE_SHA="$(sha256sum "$TARGET_FILE" | awk '{print $1}')"
 
-echo "Changing candidate version from 7.2 to 7.3."
-sed -i 's/^version: .*/version: "7.3"/' "$CONFIG_FILE"
+echo "Changing candidate content while keeping approved version unchanged."
+sed -i 's/^owner: .*/owner: unapproved-team/' "$CONFIG_FILE"
 
-echo "Running governance pipeline with unapproved configuration."
+if ! grep -q '^version: "7.2"$' "$CONFIG_FILE"; then
+    echo "ERROR: Negative test unexpectedly changed the approved version."
+    exit 1
+fi
+
+echo "Running governance pipeline with same-version unapproved configuration."
 
 set +e
 "$ROOT_DIR/scripts/run_deployment.sh" >"$EVIDENCE_FILE" 2>&1
@@ -40,7 +45,7 @@ if [[ "$STATUS" -eq 0 ]]; then
     exit 1
 fi
 
-if ! grep -q "Pre-deployment validation failed" "$EVIDENCE_FILE"; then
+if ! grep -q "Pre-deployment governance validation failed" "$EVIDENCE_FILE"; then
     echo "ERROR: Pipeline failed, but not at the expected pre-deployment governance gate."
     exit 1
 fi
@@ -50,7 +55,7 @@ if [[ "$BASELINE_SHA" != "$AFTER_SHA" ]]; then
     exit 1
 fi
 
-echo "PASS: Unapproved configuration was rejected before deployment."
+echo "PASS: Same-version configuration tampering was rejected before deployment."
 echo "PASS: Previously approved deployed state remained unchanged."
 echo "Evidence: $EVIDENCE_FILE"
 
